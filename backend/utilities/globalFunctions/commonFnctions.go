@@ -134,7 +134,7 @@ func WirteJsonLogs(ginCtx *gin.Context, fileName string, logData map[string]any)
 	if fileName == "" {
 		fileName = "trip_planner_logs"
 	}
-	logFilePath := "../centralLogging/"
+	logFilePath := "centralLogging/"
 	if err := os.MkdirAll(logFilePath, 0755); err != nil {
 		fmt.Printf("failed to create log dir: %v\n", err)
 		return
