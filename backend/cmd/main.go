@@ -18,6 +18,6 @@ func main() {
 	}
 
 	if serverErr := server.ListenAndServe(); serverErr != nil {
-		fmt.Println("BC AAAAAAAAAGGGGG: " + serverErr.Error())
+		fmt.Println("Some issue occured while initiating the server: " + serverErr.Error())
 	}
 }
