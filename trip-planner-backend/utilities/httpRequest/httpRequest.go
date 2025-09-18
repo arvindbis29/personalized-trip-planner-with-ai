@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-	"trip-planner/utilities/globalFunctions"
+	"trip-planner-backend/utilities/globalFunctions"
 )
 
 // HttpRequest defines the input for the generic HTTP call

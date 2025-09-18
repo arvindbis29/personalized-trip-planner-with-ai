@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"trip-planner/handler"
+	"trip-planner-backend/handler"
 
 	"github.com/gin-gonic/gin"
 )
