@@ -1,7 +1,7 @@
 package findDestinationController
 
 import (
-	globalFunctions "trip-planner-backend/utilities/globalFunctions"
+	"trip-planner/utilities/globalFunctions"
 
 	"github.com/gin-gonic/gin"
 )

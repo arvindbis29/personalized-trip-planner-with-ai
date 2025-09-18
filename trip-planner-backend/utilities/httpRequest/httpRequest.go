@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-	globalFunctions "trip-planner-backend/utilities/globalFunctions"
+	"trip-planner/utilities/globalFunctions"
 )
 
 // HttpRequest defines the input for the generic HTTP call
@@ -185,9 +185,6 @@ func ValidateAndPrepareRequest(reqData *HttpRequest) (*url.URL, error) {
 
 	return parsedURL, nil
 }
-
-
-
 
 // [
 //   {

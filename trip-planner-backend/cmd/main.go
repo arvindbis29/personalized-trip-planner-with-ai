@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"trip-planner-backend/handler"
+	"trip-planner/handler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +13,7 @@ func main() {
 	ginEngine := gin.New()
 	handler.RouteRequests(ginEngine)
 	server := &http.Server{
-		Addr:    ":"+port,
+		Addr:    ":" + port,
 		Handler: ginEngine,
 	}
 

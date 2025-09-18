@@ -1,9 +1,9 @@
 package handler
 
 import (
-	findDestinationController "trip-planner-backend/modules/tripPlanner/controller/findDestination"
-	generateItineraryController "trip-planner-backend/modules/tripPlanner/controller/generateItinerary"
-	processItineraryController "trip-planner-backend/modules/tripPlanner/controller/processItinerary"
+	findDestinationController "trip-planner/modules/tripPlanner/controller/findDestination"
+	generateItineraryController "trip-planner/modules/tripPlanner/controller/generateItinerary"
+	processItineraryController "trip-planner/modules/tripPlanner/controller/processItinerary"
 
 	"github.com/gin-gonic/gin"
 )
