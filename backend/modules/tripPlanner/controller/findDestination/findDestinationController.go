@@ -7,6 +7,6 @@ import (
 )
 
 func FindDestination(ginCtx *gin.Context) {
-	globalFuctions.WirteJsonLogs(ginCtx, "arvind_testing", map[string]interface{}{"arvind": "k"})
+	globalFuctions.WriteJsonLogs(ginCtx, "arvind_testing", map[string]any{"arvind": "k"})
 	ginCtx.Status(200)
 }

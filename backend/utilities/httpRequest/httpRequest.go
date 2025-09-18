@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-	globalFuctions "trip-planner-backend/utilities/globalFunctions"
+	globalFunctions "trip-planner-backend/utilities/globalFunctions"
 )
 
 // HttpRequest defines the input for the generic HTTP call
@@ -55,7 +55,7 @@ func MakeHttpCall(reqData HttpRequest) (respData *HttpResponse) {
 		q := finalURL.Query()
 
 		for key, value := range reqData.QueryParams {
-			strValue := globalFuctions.ConvertValueToString(value)
+			strValue := globalFunctions.ConvertValueToString(value)
 
 			q.Set(key, strValue)
 		}
@@ -68,7 +68,7 @@ func MakeHttpCall(reqData HttpRequest) (respData *HttpResponse) {
 	var inputReqBody io.Reader
 
 	if reqData.Body != nil && reqData.Method != http.MethodGet {
-		jsonBody, err := globalFuctions.ConvertValueToJson(reqData.Body)
+		jsonBody, err := globalFunctions.ConvertValueToJson(reqData.Body)
 
 		if err != "" {
 			respData.Err = fmt.Errorf("%s", "error int marshling the body: "+err)
@@ -91,7 +91,7 @@ func MakeHttpCall(reqData HttpRequest) (respData *HttpResponse) {
 	// add header
 
 	for key, value := range reqData.Headers {
-		strValue := globalFuctions.ConvertValueToString(value)
+		strValue := globalFunctions.ConvertValueToString(value)
 		request.Header.Set(key, strValue)
 	}
 
@@ -125,7 +125,7 @@ func MakeHttpCall(reqData HttpRequest) (respData *HttpResponse) {
 		return respData
 	}
 
-	// unMarshal response int map[string] interface{}
+	// unMarshal response int map[string] any
 
 	var bodyMap map[string]any
 

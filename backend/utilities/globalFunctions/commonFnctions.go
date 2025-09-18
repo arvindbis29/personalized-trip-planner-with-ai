@@ -1,4 +1,4 @@
-package globalFuctions
+package globalFunctions
 
 import (
 	"encoding/json"
@@ -37,11 +37,14 @@ func GetCurrentTimeInMs() string {
 
 }
 
-func ConvertValueToString(value interface{}) string {
+func ConvertValueToString(value any) string {
+	if value == nil {
+		return ""
+	}
 	return fmt.Sprintf("%v", value)
 }
 
-func ConvertValueToInt(inputValue interface{}) int {
+func ConvertValueToInt(inputValue any) int {
 
 	var convertedVal int
 	switch val := inputValue.(type) { //in go switch dont require break statement so no need to apply
@@ -123,7 +126,7 @@ func ConvertJsonValToString(inputValue any) string {
 
 }
 
-func WirteJsonLogs(ginCtx *gin.Context, fileName string, logData map[string]any) {
+func WriteJsonLogs(ginCtx *gin.Context, fileName string, logData map[string]any) {
 
 	if ginCtx != nil {
 		if hostServer := ginCtx.Request.Host; hostServer != "" {
