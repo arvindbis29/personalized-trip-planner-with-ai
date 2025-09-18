@@ -13,7 +13,7 @@ func main() {
 	ginEngine := gin.New()
 	handler.RouteRequests(ginEngine)
 	server := &http.Server{
-		Addr:    ":"+port,
+		Addr:    ":" + port,
 		Handler: ginEngine,
 	}
 
