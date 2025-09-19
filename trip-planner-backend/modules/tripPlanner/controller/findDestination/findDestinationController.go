@@ -17,18 +17,20 @@ func FindDestination(ginCtx *gin.Context) {
 	if bindErr != nil {
 		apiResponse.Code = http.StatusBadRequest
 		apiResponse.Status = "Failure"
-		apiResponse.Response = map[string]any{
-			"reponse": nil,
-			"error":   bindErr.Error(),
-		}
+		apiResponse.Error = bindErr.Error()
 		ReturnApiResponse(ginCtx, http.StatusBadRequest, apiResponse)
 	}
 
 	userQuery := findDestinationModel.GenerateUserQuery(apiInputParam)
-	apiResponse.Response = map[string]any{
-		"userQuery" : userQuery,
+	resp, respErr := findDestinationModel.GenerateDestinationSuggestion(ginCtx, userQuery)
+	if respErr != nil {
+		apiResponse.Code = http.StatusInternalServerError
+		apiResponse.Status = "Success"
+		apiResponse.Error = respErr.Error()
 	}
-
+	apiResponse.Code = http.StatusOK
+	apiResponse.Status = "Success"
+	apiResponse.Response = resp
 	ReturnApiResponse(ginCtx, http.StatusOK, apiResponse)
 }
 
