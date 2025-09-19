@@ -1,7 +1,15 @@
 package processItineraryController
 
-import "github.com/gin-gonic/gin"
+import (
+	imagemedia "trip-planner-backend/utilities/imageMedia"
+
+	"github.com/gin-gonic/gin"
+)
 
 func ProcessItinerary(ginCtx *gin.Context) {
-	ginCtx.Status(200)
+	image := imagemedia.FetchMedia("taj mahal")
+
+	ginCtx.JSON(200, map[string]any{
+		"url": image,
+	})
 }
