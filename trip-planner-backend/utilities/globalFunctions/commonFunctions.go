@@ -174,3 +174,7 @@ func ConvertValueToJson(inputValue any) ([]byte, string) {
 	}
 	return res, ""
 }
+
+func ExtractJson(rawMessage string) (string) {
+	return rawMessage
+}
