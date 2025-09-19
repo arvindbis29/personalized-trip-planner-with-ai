@@ -28,13 +28,14 @@ func FindDestination(ginCtx *gin.Context) {
 		apiResponse.Status = "Success"
 		apiResponse.Error = respErr.Error()
 	}
+	findDestinationModel.EnrichDestinationImages(&resp)
 	apiResponse.Code = http.StatusOK
 	apiResponse.Status = "Success"
 	apiResponse.Response = resp
 	ReturnApiResponse(ginCtx, http.StatusOK, apiResponse)
 }
 
-func BindInputParams(ginCtx *gin.Context) (InputParams findDestinationModel.BindingInputParams, err error) {
+func BindInputParams(ginCtx *gin.Context) (InputParams findDestinationModel.ApiInputParams, err error) {
 	bindErr := ginCtx.ShouldBindBodyWithJSON(&InputParams)
 	return InputParams, bindErr
 }
