@@ -3,7 +3,6 @@ package findDestinationController
 import (
 	"net/http"
 	findDestinationModel "trip-planner-backend/modules/tripPlanner/model/findDestination"
-	"trip-planner-backend/utilities/globalFunctions"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,6 +10,11 @@ import (
 func FindDestination(ginCtx *gin.Context) {
 	apiInputParam, bindErr := BindInputParams(ginCtx)
 	apiResponse := findDestinationModel.ApiResponse{}
+	defer func ()  {
+	findDestinationModel.CreateApplicationLogs(ginCtx, apiInputParam, apiResponse)
+		
+	}()
+	
 	if bindErr != nil {
 		apiResponse.Code= http.StatusBadRequest
 		apiResponse.Status = "Failure"
@@ -20,8 +24,8 @@ func FindDestination(ginCtx *gin.Context) {
 		}
 		ReturnApiResponse(ginCtx, http.StatusBadRequest, apiResponse)
 	}
-	globalFunctions.WriteJsonLogs(ginCtx, "arvind_testing", map[string]any{"arvind": "k"})
-	ginCtx.Status(200)
+
+	ReturnApiResponse(ginCtx, http.StatusOK, apiResponse)
 }
 
 func BindInputParams(ginCtx *gin.Context) (InputParams findDestinationModel.BindingInputParams, err error) {

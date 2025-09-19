@@ -22,5 +22,5 @@ type ApiResponse struct {
 	Response map[string]any `json:"response"`
 }
 
-func CreateApplicationLogs(ginCtx *gin.Context, apiInputParams BindingInputParams) {
+func CreateApplicationLogs(ginCtx *gin.Context, apiInputParams BindingInputParams, apiResponse ApiResponse) {
 }
