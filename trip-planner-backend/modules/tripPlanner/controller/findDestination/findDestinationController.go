@@ -12,7 +12,6 @@ func FindDestination(ginCtx *gin.Context) {
 	apiResponse := findDestinationModel.ApiResponse{}
 	defer func() {
 		findDestinationModel.CreateApplicationLogs(ginCtx, apiInputParam, apiResponse)
-
 	}()
 
 	if bindErr != nil {
