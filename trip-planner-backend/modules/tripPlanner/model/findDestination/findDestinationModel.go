@@ -3,15 +3,17 @@ package findDestinationModel
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
+	globalconstant "trip-planner-backend/globalConstant"
+	"trip-planner-backend/utilities/genaiService"
 	"trip-planner-backend/utilities/globalFunctions"
+	"trip-planner-backend/utilities/imageMedia"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/genai"
 )
 
-type BindingInputParams struct {
+type ApiInputParams struct {
 	UserId                int    `json:"user_id" binding:"required"`
 	UserLocation          string `json:"user_location"`
 	IsInternationalTravel bool   `json:"is_international_travel"`
@@ -54,17 +56,17 @@ func GetSystemQuery() string {
 	exampleFormat := &ContentGenerationResponse{
 		Locations: []GeneratedDestination{
 			{
-				Place: "Name of the place",
-				Image: "public Image url of the suggested location",
+				Place:       "Name of the place",
+				Image:       "public Image url of the suggested location",
 				Description: "Short description of suggested location",
-				Cost: "Expected cost of the trip",
+				Cost:        "Expected cost of the trip",
 			},
 		},
 	}
-	exampleFormatBytes , _ := json.Marshal(exampleFormat)
+	exampleFormatBytes, _ := json.Marshal(exampleFormat)
 	exampleFormatString := string(exampleFormatBytes)
-	b.WriteString("- Response should be strictly in below JSON format: ```json\n"+exampleFormatString+"```\n")
-	b.WriteString("- Retunrning JSON response should contain atleast one location suggestion and atmost five suggestions")
+	b.WriteString("- Response should be strictly in below JSON format: ```json\n" + exampleFormatString + "```\n")
+	b.WriteString("- Retunrning JSON response should contain atleast one location suggestion and atmost five suggestions, but it should aim for close to five suggestions of possible")
 	b.WriteString("- place name should be consice and must be most commnly used name for that place.\n")
 	b.WriteString("- image of the location must have 16:9 aspect ratio and it must be sourced **only** from publicly accessible and free platforms: Unsplash, Pexels, Pixabay, or Wikimedia Commons, with minimum 1600x900 resolution.\n")
 	b.WriteString("- Never invent or hallucinate image URLs.\n")
@@ -73,7 +75,7 @@ func GetSystemQuery() string {
 	return b.String()
 }
 
-func GenerateUserQuery(apiInputParams BindingInputParams) string {
+func GenerateUserQuery(apiInputParams ApiInputParams) string {
 	var b strings.Builder
 
 	b.WriteString("Given the user inputs below, suggest suitable trip locations tailored to their preferences and constraints.\n\n")
@@ -132,32 +134,17 @@ func GenerateUserQuery(apiInputParams BindingInputParams) string {
 }
 
 func GenerateDestinationSuggestion(ginCtx *gin.Context, userQuery string) (result ContentGenerationResponse, err error) {
-	clientConfig := genai.ClientConfig{
-		APIKey: os.Getenv("GEMINI_API_KEY"),
-	}
-	client, clientErr := genai.NewClient(ginCtx, &clientConfig)
+	client, clientErr := genaiService.GetClient()
 	if clientErr != nil {
 		err = clientErr
 		return
 	}
-	modelList, modelListErr := client.Models.List(ginCtx, &genai.ListModelsConfig{})
-	if modelListErr != nil {
-		err = modelListErr
+
+	model := globalconstant.GEMINI_MODEL
+	if isModelAvailableErr := genaiService.IsModelAvailable(ginCtx, client, model); isModelAvailableErr != nil {
+		err = isModelAvailableErr
 		return
 	}
-	var availableModels []string
-	for _, model := range modelList.Items {
-		for _, action := range model.SupportedActions {
-			if action == "generateContent" {
-				availableModels = append(availableModels, model.Name)
-			}
-		}
-	}
-	if len(availableModels) == 0 {
-		err = fmt.Errorf("no suitable model found")
-		return
-	}
-	model := "gemini-2.5-flash"
 	contents := []*genai.Content{
 		{
 			Role: "model",
@@ -217,7 +204,6 @@ func GenerateDestinationSuggestion(ginCtx *gin.Context, userQuery string) (resul
 		return
 	}
 	rawResponse, _ := globalFunctions.ExtractJson(modelResponse.Text())
-	fmt.Println(rawResponse)
 	if unmarshalErr := json.Unmarshal([]byte(rawResponse), &result); unmarshalErr != nil {
 		err = unmarshalErr
 		return
@@ -225,7 +211,13 @@ func GenerateDestinationSuggestion(ginCtx *gin.Context, userQuery string) (resul
 	return
 }
 
-func CreateApplicationLogs(ginCtx *gin.Context, apiInputParams BindingInputParams, apiResponse ApiResponse) {
+func EnrichDestinationImages(generatedContent *ContentGenerationResponse) {
+	for index, dest := range generatedContent.Locations {
+		generatedContent.Locations[index].Image = imageMedia.FetchMedia(dest.Place)
+	}
+}
+
+func CreateApplicationLogs(ginCtx *gin.Context, apiInputParams ApiInputParams, apiResponse ApiResponse) {
 
 	fileName := "find_destination"
 

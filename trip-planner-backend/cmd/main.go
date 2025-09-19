@@ -3,13 +3,19 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"trip-planner-backend/handler"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	port := "8080"
+	loadEnvErr := godotenv.Load()
+	if loadEnvErr != nil {
+		fmt.Println("Some error in loading env file: " + loadEnvErr.Error())
+	}
+	port := os.Getenv("LISTEN_PORT")
 	ginEngine := gin.New()
 	handler.RouteRequests(ginEngine)
 	server := &http.Server{
