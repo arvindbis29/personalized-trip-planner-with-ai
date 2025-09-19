@@ -4,3 +4,6 @@ go.sum
 
 # Ignore any centralLogging folder at any depth
 **/centralLogging/
+
+#Ignore environment variables
+*.env
