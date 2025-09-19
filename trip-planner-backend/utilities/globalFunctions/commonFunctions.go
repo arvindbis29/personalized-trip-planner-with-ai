@@ -2,6 +2,7 @@ package globalFunctions
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -175,6 +176,27 @@ func ConvertValueToJson(inputValue any) ([]byte, string) {
 	return res, ""
 }
 
-func ExtractJson(rawMessage string) (string) {
-	return rawMessage
+func ExtractJson(rawMessage string) (string, error) {
+
+	startIndex := strings.IndexAny(rawMessage, "{[")
+
+	if startIndex == -1 {
+		return "", errors.New("no json start Index found")
+	}
+
+	endIndex := strings.LastIndexAny(rawMessage, "]}")
+
+	if endIndex == -1 {
+		return "", fmt.Errorf("no json last index found")
+
+	}
+
+	newRawMessage := rawMessage[startIndex : endIndex+1]
+
+	var js any
+	if err := json.Unmarshal([]byte(newRawMessage), &js); err != nil {
+		return "", fmt.Errorf("nvalid JSON after trimming: %w", err)
+	}
+
+	return newRawMessage, nil
 }
