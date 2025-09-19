@@ -9,7 +9,9 @@ import (
 
 func FindDestination(ginCtx *gin.Context) {
 	apiInputParam, bindErr := BindInputParams(ginCtx)
-	apiResponse := findDestinationModel.ApiResponse{}
+	apiResponse := findDestinationModel.ApiResponse{
+		Code: http.StatusOK,
+	}
 	defer func ()  {
 	findDestinationModel.CreateApplicationLogs(ginCtx, apiInputParam, apiResponse)
 		
@@ -23,6 +25,11 @@ func FindDestination(ginCtx *gin.Context) {
 			"error" : bindErr.Error(),
 		}
 		ReturnApiResponse(ginCtx, http.StatusBadRequest, apiResponse)
+	}
+
+	userQuery := findDestinationModel.GenerateUserQuery(apiInputParam)
+	apiResponse.Response = map[string]any{
+		"userQuery" : userQuery,
 	}
 
 	ReturnApiResponse(ginCtx, http.StatusOK, apiResponse)
