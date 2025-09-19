@@ -38,9 +38,10 @@ type ContentGenerationResponse struct {
 }
 
 type ApiResponse struct {
-	Code     int            `json:"code"`
-	Status   string         `json:"status"`
-	Response map[string]any `json:"response"`
+	Code     int                       `json:"code"`
+	Status   string                    `json:"status"`
+	Error    string                    `json:"error"`
+	Response ContentGenerationResponse `json:"response"`
 }
 
 func GetSystemQuery() string {
@@ -50,25 +51,25 @@ func GetSystemQuery() string {
 	b.WriteString("Your task is to generate suitable international trip locations tailored to the provided user inputs.\n")
 	b.WriteString("- Always consider explicit preferences: preferred location type, nature of trip, group type, custom requirements, budget.\n")
 	b.WriteString("- Check real-time travel conditions (weather forecasts, official advisories, major local events, transport disruptions, health alerts, natural-disaster warnings). Any location considered harmful to user should be excluded from the suggestion\n")
-	exampleFormat := map[string]any{
-		"locations": []GeneratedDestination{
+	exampleFormat := &ContentGenerationResponse{
+		Locations: []GeneratedDestination{
 			{
-				LocationName:        "Consice name of the location that is used amongst travellers",
-				LocationImage:       "Valid image url from public servers that can be accessed publically with 16:9 aspect ratio",
-				LocationDescription: "Short description of the location, highlighting attractions of the place",
-				ExpectedTripCost:    "Approximate cost of trip that includes hotel costs, travel costs and other costs with reasonable assumptions",
+				Place: "Name of the place",
+				Image: "public Image url of the suggested location",
+				Description: "Short description of suggested location",
+				Cost: "Expected cost of the trip",
 			},
 		},
 	}
-	if exampleFormatByteData, marshalErr := json.Marshal(exampleFormat); marshalErr == nil {
-		exampleFormatString := string(exampleFormatByteData)
-		b.WriteString("- Response must be in JSON format only:\n")
-		b.WriteString("```json\n" + exampleFormatString + "```\n")
-		b.WriteString("- Do not add preamble, explanations, or text outside JSON.\n")
-		b.WriteString("- Never invent or hallucinate image URLs.\n")
-	} else {
-		b.Reset()
-	}
+	exampleFormatBytes , _ := json.Marshal(exampleFormat)
+	exampleFormatString := string(exampleFormatBytes)
+	b.WriteString("- Response should be strictly in below JSON format: ```json\n"+exampleFormatString+"```\n")
+	b.WriteString("- Retunrning JSON response should contain atleast one location suggestion and atmost five suggestions")
+	b.WriteString("- place name should be consice and must be most commnly used name for that place.\n")
+	b.WriteString("- image of the location must have 16:9 aspect ratio and it must be sourced **only** from publicly accessible and free platforms: Unsplash, Pexels, Pixabay, or Wikimedia Commons, with minimum 1600x900 resolution.\n")
+	b.WriteString("- Never invent or hallucinate image URLs.\n")
+	b.WriteString("- Location description should be one sententce summary of the place with highlighting attraction of the location as tourism place.\n")
+	b.WriteString("- Cost should be approximate cost of the travel with reasonable assumptions that includes hotel costs, travel costs and other trip related cost")
 	return b.String()
 }
 
@@ -152,10 +153,14 @@ func GenerateDestinationSuggestion(ginCtx *gin.Context, userQuery string) (resul
 			}
 		}
 	}
-	model := "Gemini 2.5 Pro"
+	if len(availableModels) == 0 {
+		err = fmt.Errorf("no suitable model found")
+		return
+	}
+	model := "gemini-2.5-flash"
 	contents := []*genai.Content{
 		{
-			Role: "system",
+			Role: "model",
 			Parts: []*genai.Part{
 				{
 					Text: GetSystemQuery(),
@@ -172,7 +177,7 @@ func GenerateDestinationSuggestion(ginCtx *gin.Context, userQuery string) (resul
 		},
 	}
 	contentGenerateConfig := genai.GenerateContentConfig{
-		ResponseMIMEType: "application/json",
+		ResponseMIMEType: "text/plain",
 		ResponseSchema: &genai.Schema{
 			Type: genai.TypeObject,
 			Properties: map[string]*genai.Schema{
@@ -200,13 +205,19 @@ func GenerateDestinationSuggestion(ginCtx *gin.Context, userQuery string) (resul
 			},
 			Required: []string{"locations"},
 		},
+		Tools: []*genai.Tool{
+			{
+				GoogleSearch: &genai.GoogleSearch{},
+			},
+		},
 	}
 	modelResponse, respErr := client.Models.GenerateContent(ginCtx, model, contents, &contentGenerateConfig)
 	if respErr != nil {
 		err = respErr
 		return
 	}
-	rawResponse := globalFunctions.ExtractJson(modelResponse.Text())
+	rawResponse, _ := globalFunctions.ExtractJson(modelResponse.Text())
+	fmt.Println(rawResponse)
 	if unmarshalErr := json.Unmarshal([]byte(rawResponse), &result); unmarshalErr != nil {
 		err = unmarshalErr
 		return
