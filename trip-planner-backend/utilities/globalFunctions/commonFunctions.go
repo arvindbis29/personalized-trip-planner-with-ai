@@ -120,7 +120,7 @@ func ConvertJsonValToString(inputValue any) string {
 	case int:
 		result = strconv.Itoa(val)
 	default:
-		result = ConvertJsonValToString(val)
+		result = ConvertValueToString(val)
 	}
 	return result
 
