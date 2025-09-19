@@ -24,6 +24,11 @@ func FindDestination(ginCtx *gin.Context) {
 		ReturnApiResponse(ginCtx, http.StatusBadRequest, apiResponse)
 	}
 
+	userQuery := findDestinationModel.GenerateUserQuery(apiInputParam)
+	apiResponse.Response = map[string]any{
+		"userQuery" : userQuery,
+	}
+
 	ReturnApiResponse(ginCtx, http.StatusOK, apiResponse)
 }
 
