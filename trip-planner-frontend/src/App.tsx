@@ -1,5 +1,35 @@
 import React, { useState, useEffect } from 'react';
 
+// --- Type Definitions ---
+interface TripFormData {
+    destination: string;
+    activeCategory: string | null;
+    days: number;
+    date: string;
+    people: number;
+    group: string;
+    budget: string;
+    customReq: string;
+}
+
+interface Location {
+    place: string;
+    image: string;
+    description: string;
+    cost: string;
+}
+
+interface TripPlanResponse {
+    locations: Location[];
+}
+
+interface ApiResponse {
+    code: number;
+    status: string;
+    error: string;
+    response: TripPlanResponse;
+}
+
 // --- Script and Font Loader ---
 // This component loads the necessary Tailwind CSS script and Google Fonts.
 const ExternalResourcesLoader = () => {
@@ -62,7 +92,7 @@ const AdventureIcon = () => (
 );
 
 const ChatIcon = () => (
-    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12h.01"/><path d="M20 12h.01"/><path d="M4 12h.01"/><path d="M17.5 18.5c.34.34.66.7.97 1.09.2.26.43.5.68.75.25.26.52.5.8.73.4.34.82.64 1.28.9.22.13.44.25.67.36.23.11.46.21.7.3.1.04.2.08.3.12a2 2 0 0 1-.36 3.61c-.39.04-.78-.04-1.15-.22a14.7 14.7 0 0 1-5.75-3.32c-1.35-1.12-2.5-2.5-3.32-4.06C5.46 13.9 5 12 5 10c0-2.1.5-4 1.48-5.63"/><path d="M16 5.5c-.34-.34-.66-.7-.97-1.09-.2-.26-.43-.5-.68-.75-.25-.26-.52-.5-.8-.73-.4-.34-.82-.64-1.28-.9-.22-.13-.44-.25-.67-.36-.23-.11-.46-.21-.7-.3-.1-.04-.2-.08-.3-.12a2 2 0 0 0 .36-3.61c.39-.04.78.04 1.15.22a14.7 14.7 0 0 1 5.75 3.32c1.35 1.12 2.5 2.5 3.32 4.06C20.54 12.1 21 14 21 16c0 2.1-.5 4-1.48 5.63"/></svg>
+    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12h.01"/><path d="M20 12h.01"/><path d="M4 12h.01"/><path d="M17.5 18.5c.34.34.66.7.97 1.09.2.26.43.5.68.75.25.26.52.5.8.73.4.34.82.64 1.28.9.22.13.44.25.67.36.23.11.46.21.7.3.1.04.2.08.3.12a2 2 0 0 1-.36 3.61c-.39.04-.78-.04-1.15-.22a14.7 14.7 0 0 1-5.75-3.32c-1.35-1.12-2.5-2.5-3.32-4.06C5.46 13.9 5 12 5 10c0-2.1.5-4 1.48-5.63"/><path d="M16 5.5c-.34-.34-.66-.7-.97-1.09-.2-.26-.43-.5-.68-.75-.25-.26-.52-.5-.8-.73-.4-.34-.82-.64-1.28-.9-.22-.13-.44-.25-.67-.36-.23-.11-.46.21-.7-.3-.1-.04-.2-.08-.3-.12a2 2 0 0 0 .36-3.61c.39-.04.78.04 1.15-.22a14.7 14.7 0 0 1 5.75 3.32c1.35 1.12 2.5 2.5 3.32 4.06C20.54 12.1 21 14 21 16c0 2.1-.5 4-1.48 5.63"/></svg>
 );
 
 // --- UI Components ---
@@ -132,15 +162,39 @@ const Header = () => {
     );
 };
 
-const Hero = () => {
-    const [searchValue, setSearchValue] = useState("");
-    const [activeCategory, setActiveCategory] = useState(null);
+const Hero = ({ onSearch }: { onSearch: (formData: TripFormData) => void; }) => {
+    const [searchValue, setSearchValue] = useState("Switzerland");
+    const [activeCategory, setActiveCategory] = useState<string | null>('Luxury');
     
+    const [days, setDays] = useState(7);
+    const [date, setDate] = useState(() => {
+        const d = new Date(2025, 11, 15); // Month is 0-indexed, so 11 is December
+        return d.toISOString().split('T')[0];
+    });
+    const [people, setPeople] = useState(4);
+    const [group, setGroup] = useState('family');
+    const [budget, setBudget] = useState('medium');
+    const [customReq, setCustomReq] = useState("Need vegetarian food options and kid-friendly activities");
+
+
     const categories = {
         'Easy Book': <EasyBookIcon />,
         'Honeymoon': <HoneymoonIcon />,
         'Luxury': <LuxuryIcon />,
         'Adventure': <AdventureIcon />,
+    };
+    
+    const handleSearchClick = () => {
+        onSearch({
+            destination: searchValue,
+            activeCategory,
+            days,
+            date,
+            people,
+            group,
+            budget,
+            customReq
+        });
     };
 
     return (
@@ -149,20 +203,62 @@ const Hero = () => {
             <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 lg:py-40 text-center">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">AI-Powered Trip Planner</h1>
                 <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto">Where Every Experience Counts!</p>
-                <div className="mt-8 max-w-2xl mx-auto">
-                    <div className="flex flex-col sm:flex-row items-center bg-white rounded-full shadow-lg p-2">
-                        <div className="flex items-center w-full sm:w-auto flex-grow pl-4">
-                            <SearchIcon />
-                            <input 
-                                type="text" 
-                                placeholder="Enter Your Dream Destination!" 
-                                className="w-full bg-transparent border-none focus:ring-0 text-gray-800 placeholder-gray-500 py-2 px-3"
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                            />
+                <div className="mt-8 max-w-4xl mx-auto bg-white/20 backdrop-blur-sm p-6 rounded-2xl">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                         {/* Destination Input */}
+                        <div className="flex flex-col items-start col-span-1 md:col-span-3">
+                            <label className="text-white font-semibold mb-2 ml-2">Destination</label>
+                            <div className="flex items-center w-full bg-white rounded-full shadow-lg p-2">
+                                <div className="flex items-center w-full flex-grow pl-4">
+                                    <SearchIcon />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Enter Your Dream Destination!" 
+                                        className="w-full bg-transparent border-none focus:ring-0 text-gray-800 placeholder-gray-500 py-2 px-3"
+                                        value={searchValue}
+                                        onChange={(e) => setSearchValue(e.target.value)}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <button className="w-full sm:w-auto mt-2 sm:mt-0 bg-orange-500 text-white font-bold py-3 px-8 rounded-full hover:bg-orange-600 transition duration-300">Search</button>
+
+                        {/* Other Inputs */}
+                        <div className="flex flex-col items-start">
+                             <label className="text-white font-semibold mb-2 ml-2">Travel Date</label>
+                             <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full p-3 rounded-full text-gray-800"/>
+                        </div>
+                        <div className="flex flex-col items-start">
+                             <label className="text-white font-semibold mb-2 ml-2">Days</label>
+                             <input type="number" value={days} onChange={e => setDays(parseInt(e.target.value, 10) || 0)} className="w-full p-3 rounded-full text-gray-800"/>
+                        </div>
+                         <div className="flex flex-col items-start">
+                             <label className="text-white font-semibold mb-2 ml-2">People</label>
+                             <input type="number" value={people} onChange={e => setPeople(parseInt(e.target.value, 10) || 0)} className="w-full p-3 rounded-full text-gray-800"/>
+                        </div>
+                        <div className="flex flex-col items-start">
+                            <label className="text-white font-semibold mb-2 ml-2">Group</label>
+                            <select value={group} onChange={e => setGroup(e.target.value)} className="w-full p-3 rounded-full text-gray-800">
+                                <option>Family</option>
+                                <option>Friends</option>
+                                <option>Couple</option>
+                                <option>Solo</option>
+                            </select>
+                        </div>
+                        <div className="flex flex-col items-start">
+                            <label className="text-white font-semibold mb-2 ml-2">Budget</label>
+                            <select value={budget} onChange={e => setBudget(e.target.value)} className="w-full p-3 rounded-full text-gray-800">
+                                <option>Low</option>
+                                <option>Medium</option>
+                                <option>High</option>
+                            </select>
+                        </div>
+                        <div className="col-span-1 md:col-span-3">
+                             <textarea value={customReq} onChange={(e) => setCustomReq(e.target.value)} placeholder="Any custom requirements? e.g. 'Need vegetarian food options'" className="w-full p-3 rounded-2xl text-gray-800" rows={2}></textarea>
+                        </div>
                     </div>
+                     <button onClick={handleSearchClick} className="w-full md:w-auto mt-6 bg-orange-500 text-white font-bold py-3 px-12 rounded-full hover:bg-orange-600 transition duration-300 text-lg">
+                        Find Destination
+                    </button>
                 </div>
                 <div className="mt-10 flex flex-wrap justify-center items-center gap-4">
                     {Object.entries(categories).map(([name, icon]) => (
@@ -187,7 +283,7 @@ const Hero = () => {
  * @param {string} props.imageUrl - The URL of the destination image.
  * @param {string} props.name - The name of the destination.
  */
-const DestinationCard = ({ imageUrl, name }) => (
+const DestinationCard = ({ imageUrl, name }: { imageUrl: string; name: string; }) => (
     <div className="relative rounded-xl overflow-hidden shadow-lg group">
         <img src={imageUrl} alt={name} className="w-full h-80 object-cover card-img" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -267,7 +363,7 @@ const GlobalStyles = () => (
             background-color: #f8fafc;
         }
         .hero-bg {
-            background-image: url('https://images.unsplash.com/photo-1483683838938-34db11f016ce?q=80&w=2070&auto=format&fit=crop');
+            background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
         }
@@ -280,16 +376,146 @@ const GlobalStyles = () => (
     `}</style>
 );
 
+const LocationCard = ({ location, onSelect }: { location: Location; onSelect: () => void }) => {
+    return (
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-transform duration-300 hover:-translate-y-2">
+            <img className="h-56 w-full object-cover" src={location.image} alt={`Image of ${location.place}`} />
+            <div className="p-6 flex flex-col flex-grow">
+                <h3 className="font-bold text-xl mb-2 text-gray-800">{location.place}</h3>
+                <p className="text-gray-600 text-base flex-grow">{location.description}</p>
+                <div className="mt-4">
+                    <p className="font-semibold text-gray-700">Estimated Cost:</p>
+                    <p className="text-indigo-600 font-bold text-lg">{location.cost}</p>
+                </div>
+                 <button 
+                    onClick={onSelect}
+                    className="mt-6 w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300">
+                    Select Plan
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const TripResults = ({ isLoading, error, tripPlan }: { 
+    isLoading: boolean; 
+    error: string | null; 
+    tripPlan: ApiResponse | null 
+}) => {
+    if (isLoading) {
+        return (
+            <div className="text-center py-20">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto"></div>
+                <p className="mt-6 text-lg text-gray-600">Finding the best destinations for you...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <section className="container mx-auto px-4 sm:px-6 lg:px-8 my-10">
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+                    <strong className="font-bold">Oops!</strong>
+                    <span className="block sm:inline ml-2">Something went wrong: {error}</span>
+                    <div className="mt-2 text-sm">
+                        <p>Debug info:</p>
+                        <p>• Check if backend is running on port 8080</p>
+                        <p>• Check browser console for more details</p>
+                        <p>• Try refreshing the page</p>
+                    </div>
+                </div>
+             </section>
+        );
+    }
+
+    if (!tripPlan || !tripPlan.response || tripPlan.response.locations.length === 0) {
+        return null; // Don't render anything if there's no plan yet
+    }
+
+    return (
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 my-10">
+            <h2 className="text-3xl font-bold text-gray-800 text-center mb-10">We found these amazing destinations for you!</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+               {tripPlan.response.locations.map((location: Location) => (
+                   <LocationCard 
+                        key={location.place} 
+                        location={location} 
+                        onSelect={() => console.log("Selected:", location.place)}
+                    />
+               ))}
+            </div>
+        </section>
+    );
+};
+
 // --- Main App Component ---
 // This is the default export that will be rendered.
 export default function App() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [tripPlan, setTripPlan] = useState<ApiResponse | null>(null);
+
+    const handleSearch = async (formData: TripFormData) => {
+        console.log('Starting search with data:', formData);
+        setIsLoading(true);
+        setError(null);
+        setTripPlan(null); // Clear previous results
+
+        const requestBody = {
+            user_id: 101,
+            is_international_travel: true, // Simplified for now
+            travel_days: Number(formData.days),
+            travel_date_time: new Date(formData.date).toISOString(),
+            traveling_method: "flight",
+            trip_nature: formData.activeCategory?.toLowerCase() || "leisure",
+            person_count: Number(formData.people),
+            group_demographic: formData.group.toLowerCase(),
+            budget: formData.budget.toLowerCase(),
+            custom_requirement: formData.customReq,
+            preferred_location: formData.destination,
+        };
+        
+        console.log('Request body:', requestBody);
+        
+        try {
+            console.log('Making API call to:', 'http://localhost:8080/tripPlanner/findDestination');
+            // NOTE: This is a call to a local server.
+            // It will only work if you have a server running on localhost:8080.
+            const response = await fetch('http://localhost:8080/tripPlanner/findDestination', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody),
+            });
+
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error:', response.status, errorText);
+                throw new Error(`API Error: ${response.status} - ${errorText}`);
+            }
+
+            const data: ApiResponse = await response.json();
+            console.log('API Response:', data);
+            setTripPlan(data);
+        } catch (e) {
+            console.error("Search failed:", e);
+            setError(e instanceof Error ? e.message : 'An unknown error occurred');
+        } finally {
+            // This block ensures the loader is turned off regardless of success or failure.
+            setIsLoading(false);
+        }
+    };
+
     return (
         <>
             <ExternalResourcesLoader />
             <GlobalStyles />
             <Header />
             <main>
-                <Hero />
+                <Hero onSearch={handleSearch} />
+                <TripResults isLoading={isLoading} error={error} tripPlan={tripPlan} />
                 <TrendingDestinations />
                 <PromoBanner />
             </main>
@@ -298,4 +524,3 @@ export default function App() {
         </>
     );
 }
-
