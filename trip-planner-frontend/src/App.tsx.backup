@@ -1,35 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-// --- Type Definitions ---
-interface TripFormData {
-    destination: string;
-    activeCategory: string | null;
-    days: number;
-    date: string;
-    people: number;
-    group: string;
-    budget: string;
-    customReq: string;
-}
-
-interface Location {
-    place: string;
-    image: string;
-    description: string;
-    cost: string;
-}
-
-interface TripPlanResponse {
-    locations: Location[];
-}
-
-interface ApiResponse {
-    code: number;
-    status: string;
-    error: string;
-    response: TripPlanResponse;
-}
-
 // --- Script and Font Loader ---
 // This component loads the necessary Tailwind CSS script and Google Fonts.
 const ExternalResourcesLoader = () => {
@@ -162,9 +132,24 @@ const Header = () => {
     );
 };
 
-const Hero = ({ onSearch }: { onSearch: (formData: TripFormData) => void; }) => {
+/**
+ * @typedef {object} FormData
+ * @property {string} destination
+ * @property {string | null} activeCategory
+ * @property {number} days
+ * @property {string} date
+ * @property {number} people
+ * @property {string} group
+ * @property {string} budget
+ * @property {string} customReq
+ */
+
+/**
+ * @param {{ onSearch: (formData: FormData) => void }} props
+ */
+const Hero = ({ onSearch }: { onSearch: (formData: FormData) => void; }) => {
     const [searchValue, setSearchValue] = useState("Switzerland");
-    const [activeCategory, setActiveCategory] = useState<string | null>('Luxury');
+    const [activeCategory, setActiveCategory] = useState < string | null > ('Luxury');
     
     const [days, setDays] = useState(7);
     const [date, setDate] = useState(() => {
@@ -376,7 +361,19 @@ const GlobalStyles = () => (
     `}</style>
 );
 
-const LocationCard = ({ location, onSelect }: { location: Location; onSelect: () => void }) => {
+
+/**
+ * @typedef {object} Location
+ * @property {string} place
+ * @property {string} image
+ * @property {string} description
+ * @property {string} cost
+ */
+
+/**
+ * @param {{ location: Location, onSelect: () => void }} props
+ */
+const LocationCard = ({ location, onSelect }) => {
     return (
         <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-transform duration-300 hover:-translate-y-2">
             <img className="h-56 w-full object-cover" src={location.image} alt={`Image of ${location.place}`} />
@@ -397,11 +394,28 @@ const LocationCard = ({ location, onSelect }: { location: Location; onSelect: ()
     );
 };
 
-const TripResults = ({ isLoading, error, tripPlan }: { 
-    isLoading: boolean; 
-    error: string | null; 
-    tripPlan: ApiResponse | null 
-}) => {
+
+/**
+ * @typedef {object} TripPlanResponse
+ * @property {Location[]} locations
+ */
+
+/**
+ * @typedef {object} ApiResponse
+ * @property {number} code
+ * @property {string} status
+ * @property {string} error
+ * @property {TripPlanResponse} response
+ */
+ 
+/**
+ * @param {{ 
+ * isLoading: boolean; 
+ * error: string | null; 
+ * tripPlan: ApiResponse | null 
+ * }} props
+ */
+const TripResults = ({ isLoading, error, tripPlan }) => {
     if (isLoading) {
         return (
             <div className="text-center py-20">
@@ -417,12 +431,6 @@ const TripResults = ({ isLoading, error, tripPlan }: {
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
                     <strong className="font-bold">Oops!</strong>
                     <span className="block sm:inline ml-2">Something went wrong: {error}</span>
-                    <div className="mt-2 text-sm">
-                        <p>Debug info:</p>
-                        <p>• Check if backend is running on port 8080</p>
-                        <p>• Check browser console for more details</p>
-                        <p>• Try refreshing the page</p>
-                    </div>
                 </div>
              </section>
         );
@@ -436,7 +444,7 @@ const TripResults = ({ isLoading, error, tripPlan }: {
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 my-10">
             <h2 className="text-3xl font-bold text-gray-800 text-center mb-10">We found these amazing destinations for you!</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-               {tripPlan.response.locations.map((location: Location) => (
+               {tripPlan.response.locations.map((location) => (
                    <LocationCard 
                         key={location.place} 
                         location={location} 
@@ -452,11 +460,14 @@ const TripResults = ({ isLoading, error, tripPlan }: {
 // This is the default export that will be rendered.
 export default function App() {
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [tripPlan, setTripPlan] = useState<ApiResponse | null>(null);
+    const [error, setError] = useState(null);
+    /** @type {[ApiResponse | null, React.Dispatch<React.SetStateAction<ApiResponse | null>>]} */
+    const [tripPlan, setTripPlan] = useState(null);
 
-    const handleSearch = async (formData: TripFormData) => {
-        console.log('Starting search with data:', formData);
+    /**
+     * @param {FormData} formData
+     */
+    const handleSearch = async (formData) => {
         setIsLoading(true);
         setError(null);
         setTripPlan(null); // Clear previous results
@@ -475,10 +486,7 @@ export default function App() {
             preferred_location: formData.destination,
         };
         
-        console.log('Request body:', requestBody);
-        
         try {
-            console.log('Making API call to:', 'http://localhost:8080/tripPlanner/findDestination');
             // NOTE: This is a call to a local server.
             // It will only work if you have a server running on localhost:8080.
             const response = await fetch('http://localhost:8080/tripPlanner/findDestination', {
@@ -487,21 +495,16 @@ export default function App() {
                 body: JSON.stringify(requestBody),
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('API Error:', response.status, errorText);
                 throw new Error(`API Error: ${response.status} - ${errorText}`);
             }
 
-            const data: ApiResponse = await response.json();
-            console.log('API Response:', data);
+            const data = await response.json();
             setTripPlan(data);
         } catch (e) {
             console.error("Search failed:", e);
-            setError(e instanceof Error ? e.message : 'An unknown error occurred');
+            setError(e.message);
         } finally {
             // This block ensures the loader is turned off regardless of success or failure.
             setIsLoading(false);
@@ -524,3 +527,4 @@ export default function App() {
         </>
     );
 }
+
