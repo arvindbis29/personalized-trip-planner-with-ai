@@ -38,7 +38,7 @@ const ProcessItineraryAPI: React.FC<ProcessItineraryAPIProps> = ({
         try {
             console.log('ProcessItineraryAPI: Making API call to:', 'http://localhost:8080/tripPlanner/processItinerary');
             
-            const response = await fetch('http://localhost:8080/tripPlanner/processItinerary', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/tripPlanner/processItinerary`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody),

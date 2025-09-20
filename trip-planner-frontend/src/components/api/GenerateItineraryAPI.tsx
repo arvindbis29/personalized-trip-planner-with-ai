@@ -89,7 +89,7 @@ const GenerateItineraryAPI: React.FC<GenerateItineraryAPIProps> = ({
         try {
             console.log('GenerateItineraryAPI: Making API call to:', 'http://localhost:8080/tripPlanner/generateItinerary');
             
-            const response = await fetch('http://localhost:8080/tripPlanner/generateItinerary', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/tripPlanner/generateItinerary`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody),

@@ -69,7 +69,7 @@ const FindDestinationAPI: React.FC<FindDestinationAPIProps> = ({
         try {
             console.log('FindDestinationAPI: Making API call to:', 'http://localhost:8080/tripPlanner/findDestination');
             
-            const response = await fetch('http://localhost:8080/tripPlanner/findDestination', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/tripPlanner/findDestination`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody),
